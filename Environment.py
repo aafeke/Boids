@@ -69,16 +69,17 @@ class environment:
 
     def step(self):
         for cur_boid in self.boids_lst:
+            # This can be done using MP.
+
             neighbour_lst = []
             for neighbour_boid in self.gen_next_boid(cur_boid):
-                # TODO: CHECK IF IN THE RADIUS
-                # Use euclidian distance using current.getcoord()
-                # and the coord from selected.getcoord()
+
+                # calculate euclidian distance
                 cur_x, cur_y = cur_boid.get_coord()
                 nei_x, nei_y = neighbour_boid.get_coord()
-
                 dist = ((cur_x - nei_x) ** 2 + (cur_y - nei_y) ** 2) ** 0.5
 
+                # if in radius of sight.
                 if dist <= self.sight_distance:
                     neighbour_lst.append(neighbour_boid)
 
@@ -125,7 +126,7 @@ class environment:
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
         plt.savefig(f"image_{str(time.time())}.png",
-                     bbox_inches="tight", pad_inches=0)
+                    bbox_inches="tight", pad_inches=0)
 
     def __repr__(self):
         return_str = f"Amount of boids: {len(self.boids_lst)}"
