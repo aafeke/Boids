@@ -1,4 +1,4 @@
-import boids
+import boids as boids_lib
 from random import uniform
 import math
 import matplotlib.pyplot as plt
@@ -9,10 +9,11 @@ class environment:
     debug = True
     boids_lst = []
     sight_distance = 90
+    angle_min_max = (-5, 5)
     # find a set distance a boid can see
     # find a max distance a boid can fly
 
-    def __init__(self, n: int, max_coords: list):
+    def __init__(self, n: int, max_coords: list, speed_settings: list):
         """__init__ Create  environment with N boids
 
         # min -> 0,0
@@ -34,7 +35,8 @@ class environment:
             # give boids a random location
             rand_cord = (uniform(0, max_coords[0]), uniform(0, max_coords[1]))
             rand_angle = uniform(0, 360)
-            boid = boids.boids(rand_cord, rand_angle)
+            rand_speed = uniform(speed_settings[0], speed_settings[1])
+            boid = boids_lib.boids(rand_cord, rand_angle, rand_speed)
             self.boids_lst.append(boid)
 
         # create N amount of agents
@@ -44,7 +46,7 @@ class environment:
         # (x_max,y_max) or x_max and y_max
         pass
 
-    def gen_next_boid(self, cur_boid: boids, own=False) -> boids:
+    def gen_next_boid(self, cur_boid: boids_lib, own=False) -> boids_lib:
         """gen_next_boid generator for next boid
 
         A generator function that loops over every boid
@@ -52,28 +54,25 @@ class environment:
 
         Parameters
         ----------
-        boid : boids
+        boid : boids_lib
             the current boid
         own : bool, optional
             To give itself back, by default False
 
         Yields
         ------
-        Iterator[boids]
+        Iterator[boids_lib]
             a boid
         """
-        for next_boid in self.boids_lst:
-            if next_boid == cur_boid:
-                continue
+        self_index = self.boids_lst.index(cur_boid)
+        for next_boid in self.boids_lst[self_index + 1:]:
             yield next_boid
 
     def step(self):
         for cur_boid in self.boids_lst:
             # This can be done using MP.
 
-            neighbour_lst = []
             for neighbour_boid in self.gen_next_boid(cur_boid):
-
                 # calculate euclidian distance
                 cur_x, cur_y = cur_boid.get_coord()
                 nei_x, nei_y = neighbour_boid.get_coord()
@@ -81,15 +80,40 @@ class environment:
 
                 # if in radius of sight.
                 if dist <= self.sight_distance:
-                    neighbour_lst.append(neighbour_boid)
+                    cur_boid.add_neighbour(neighbour_boid)
+                    neighbour_boid.add_neighbour(cur_boid)
 
-            print(len(neighbour_lst))
-            break
+        # this is the update part
 
-        # call the update function in boid at the end
-        # apply the actions the environment
-        # If action is valid
-        # If not set the boid in a different position.
+        # explanation:
+        # We want to split the update and the step function.
+        # otherwise we allow an action and use the performed action for our
+        # calculations of the next boid.
+        #
+        # this can make it so that a bird is outside the X meter sight
+        # and still be used for the calculations.
+        #
+        # It is slower computational wise but this way we won't deal with
+        # updates states for older calculations.
+        #
+        # This can have drastic effects on example Game Of Life,
+        # not sure for boids.
+
+        # this is the step / set the action part
+        for cur_boid in self.boids_lst:
+            # Check if crossing the edge
+            self.edge(cur_boid)
+
+        # TODO for every boid, calculate if action is valid
+        # if action is not valid, set the boid to a valid spot.
+        # otherwise, allow the action of the boid
+
+        # things to check:
+        # if speed / size of the step allowed
+        # if the angle allowed
+        # min speed check
+        # is the position allowed [outside grid -> go back inside back]
+
         pass
 
     def visualise(self):
@@ -128,6 +152,35 @@ class environment:
         plt.savefig(f"image_{str(time.time())}.png",
                     bbox_inches="tight", pad_inches=0)
 
+    def edge(self, boid):
+        """edge check borders of grid.
+
+        min -> 0,0
+        Visualisation of square
+        0,0-------------0, x_max
+        |               |
+        |               |
+        |               |
+        0,y_max---------x_max, y_max
+
+        The borders are WRAP around, meaning if a boid goes to far
+        it wraps back to the other side.
+
+        Parameters
+        ----------
+        boid : class Boids
+            boids class
+        """
+        coord = boid.get_coord()
+
+        for i in list(range(len(self.max_coords))):
+            if coord[i] > self.max_coords[i]:  # above max
+                coord[i] = coord[i] - self.max_coords[i]
+            elif coord[i] < 0:  # below 0
+                coord[i] = self.max_coords[i] - coord[i]
+
+        boid.set_coord(coord)
+
     def __repr__(self):
         return_str = f"Amount of boids: {len(self.boids_lst)}"
         return return_str
@@ -135,7 +188,8 @@ class environment:
 
 # Create an environment
 max_size = (500, 500)
-env = environment(25, max_size)
+speed_settings = (5, 25)
+env = environment(25, max_size, speed_settings)
 env.step()
 env.visualise()
 # print(env)
