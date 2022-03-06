@@ -1,21 +1,21 @@
+import vector
+
+
 class boids:
-    def __init__(self, coord: tuple, angle: int):
-        # set starting angle -> direction boid will travel.
-        # set speed? -> distance boid will travel
-        # position (x, y) or seperate x / y
+    mass = 1
+
+    def __init__(self, coord: tuple, angle: int, force: vector):
         self.coord = coord
         self.angle = angle
+        self.force = force
+
+        self.delta_start = 0
         pass
 
     def update(self, neighbours: list):
-        angle = [0, 0, 0]
-        # TODO: find neighbours
-
-        # calculate the angles
-        angle[0] = self.seperation(neighbours)
-        angle[1] = self.alignment(neighbours)
-        angle[2] = self.cohesion(neighbours)
-        # set new angle / speed.
+        self.acceleration = self.force / boids.mass
+        self.velocity = self.acceleration * vector.get_time()
+        pass
 
     def seperation(self, neighbours):
         pass
@@ -25,9 +25,3 @@ class boids:
 
     def cohesion(self, neighbours):
         pass
-
-    def get_coord(self):
-        return self.coord
-
-    def get_angle(self):
-        return self.angle

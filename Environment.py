@@ -1,11 +1,13 @@
 import boids
-from random import uniform
+# from random import uniform
 import math
 import matplotlib.pyplot as plt
 import time
+# import vector
 
 
 class environment:
+
     debug = True
     boids_lst = []
     sight_distance = 90
@@ -30,12 +32,15 @@ class environment:
         """
         self.max_coords = max_coords
 
-        for _ in range(n):
-            # give boids a random location
-            rand_cord = (uniform(0, max_coords[0]), uniform(0, max_coords[1]))
-            rand_angle = uniform(0, 360)
-            boid = boids.boids(rand_cord, rand_angle)
-            self.boids_lst.append(boid)
+        # for _ in range(n):
+        #     give boids a random location
+
+        #     TODO: CHANGE THESE TO A RANDOM VECTOR
+        #     rand_cord = (uniform(0,max_coords[0]), uniform(0, max_coords[1]))
+        #     rand_angle = uniform(0, 360)
+        #     boid = boids.boids(rand_cord, rand_angle)
+
+        #     self.boids_lst.append(boid)
 
         # create N amount of agents
         # create a space where they can fly around
@@ -125,7 +130,7 @@ class environment:
         plt.axis("off")
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
-        plt.savefig(f"image_{str(time.time())}.png",
+        plt.savefig(f"images/image_{str(time.time())}.png",
                     bbox_inches="tight", pad_inches=0)
 
     def __repr__(self):
@@ -134,8 +139,8 @@ class environment:
 
 
 # Create an environment
-max_size = (500, 500)
-env = environment(25, max_size)
-env.step()
-env.visualise()
+# max_size = (500, 500)
+# env = environment(25, max_size)
+# env.step()
+# env.visualise()
 # print(env)
