@@ -9,7 +9,6 @@ class vector:
         self.vector[0] = greatness
         self.vector[1] = angle
 
-        vector.counter()
 
     @classmethod
     def set_time(cls):
