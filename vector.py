@@ -9,12 +9,12 @@ class vector:
         # 2 : x subvector
         # 3 : y subvector
 
-        self.set_greatness(greatness)
-        self.vector[1] = angle
+        self.set_vector(greatness, angle)
 
-    def set_greatness(self, val: float):
+    def set_vector(self, val: float, ang: int):
         if val != 0:
             self.vector[0] = val
+            self.vector[1] = ang
             self.vector[2] = val * math.cos(self.vector[1])
             self.vector[3] = val * math.sin(self.vector[1])
             # We should get the time in order to
@@ -38,13 +38,12 @@ class vector:
         x = self[2] + other[2]
         y = self[3] + other[3]
 
-        greatness = (x**2 + y**2) ** (0.5)
+        out_greatness = (x**2 + y**2) ** (0.5)
+        out_angle = math.acos(x/out_greatness) * 180 / math.pi
 
         out = vector()
-        out[0] = greatness
-        out[1] = math.acos(x/greatness) * 180 / math.pi
-        out[2] = x
-        out[3] = y
+        out.set_vector(out_greatness, out_angle)
+
         return out
 
     def __set_time(self):

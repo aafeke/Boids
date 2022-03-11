@@ -1,14 +1,15 @@
 import boids
-# from random import uniform
+from random import uniform
 import math
 import matplotlib.pyplot as plt
 import time
-# import vector
 
 
 class environment:
 
     debug = True
+
+    last_frame_time = None
     boids_lst = []
     sight_distance = 90
     # find a set distance a boid can see
@@ -32,15 +33,19 @@ class environment:
         """
         self.max_coords = max_coords
 
-        # for _ in range(n):
-        #     give boids a random location
+        for _ in range(n):
+            # give boids a random location
 
-        #     TODO: CHANGE THESE TO A RANDOM VECTOR
-        #     rand_cord = (uniform(0,max_coords[0]), uniform(0, max_coords[1]))
-        #     rand_angle = uniform(0, 360)
-        #     boid = boids.boids(rand_cord, rand_angle)
+            # TODO: CHANGE THESE TO A RANDOM VECTOR
+            rand_cord = (uniform(0, max_coords[0]),
+                         uniform(0, max_coords[1]))
 
-        #     self.boids_lst.append(boid)
+            rand_angle = uniform(0, 360)
+            boid = boids.boids(
+                rand_cord,
+                rand_angle)
+
+            self.boids_lst.append(boid)
 
         # create N amount of agents
         # create a space where they can fly around
@@ -49,7 +54,7 @@ class environment:
         # (x_max,y_max) or x_max and y_max
         pass
 
-    def gen_next_boid(self, cur_boid: boids, own=False) -> boids:
+    def __gen_next_boid(self, cur_boid: boids, own=False) -> boids:
         """gen_next_boid generator for next boid
 
         A generator function that loops over every boid
@@ -72,24 +77,29 @@ class environment:
                 continue
             yield next_boid
 
+    def __find_neighbour_boid(self, cur_boid):
+        # This can be done using MP.
+        neighbour_lst = []
+        for neighbour_boid in self.__gen_next_boid(cur_boid):
+            # calculate euclidian distance
+            cur_x, cur_y = cur_boid.get_coord()
+            nei_x, nei_y = neighbour_boid.get_coord()
+            dist = ((cur_x - nei_x) ** 2 + (cur_y - nei_y) ** 2) ** 0.5
+
+            # if in radius of sight.
+            if dist <= self.sight_distance:
+                neighbour_lst.append(neighbour_boid)
+        return neighbour_lst
+
     def step(self):
         for cur_boid in self.boids_lst:
-            # This can be done using MP.
+            neighbours = self.__find_neighbour_boid(cur_boid)
+            cur_boid.update(neighbours)
+            # update right away, loses precision increases speed.
+            # precision loss is insignificant since we don't work with "states"
 
-            neighbour_lst = []
-            for neighbour_boid in self.gen_next_boid(cur_boid):
-
-                # calculate euclidian distance
-                cur_x, cur_y = cur_boid.get_coord()
-                nei_x, nei_y = neighbour_boid.get_coord()
-                dist = ((cur_x - nei_x) ** 2 + (cur_y - nei_y) ** 2) ** 0.5
-
-                # if in radius of sight.
-                if dist <= self.sight_distance:
-                    neighbour_lst.append(neighbour_boid)
-
-            print(len(neighbour_lst))
-            break
+        self.calculate_positions(time.time() - self.last_frame_time)
+        self.last_frame_time = time.time()
 
         # call the update function in boid at the end
         # apply the actions the environment
@@ -97,7 +107,17 @@ class environment:
         # If not set the boid in a different position.
         pass
 
+    def calculate_positions(self, time: float):
+        for cur_boid in self.boids_lst:
+            # TODO: Get components of the speed vector
+            # and add it x component to x coord, y to y coord by
+            # multiplying with the delta time
+            break
+        pass
+
     def visualise(self):
+        # TODO: replace with p5.
+
         # Circle wont plot without subplot.
         fig, ax = plt.subplots()
         super_debug = True
@@ -105,7 +125,7 @@ class environment:
             x, y = boid.get_coord()
 
             # plot the boid itself
-            ax.scatter(x, y, cmap="hsv", marker="D")
+            ax.scatter(x, y, cmap="hsv")
             if self.debug and super_debug:
                 super_debug = False
                 # plot its sight
@@ -130,8 +150,13 @@ class environment:
         plt.axis("off")
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
-        plt.savefig(f"images/image_{str(time.time())}.png",
-                    bbox_inches="tight", pad_inches=0)
+        plt.savefig(
+            f"image_{str(time.time())}.png", bbox_inches="tight", pad_inches=0
+        )
+        # plt.savefig(
+        #     f"images/image_{str(time.time())}.png",
+        #     bbox_inches="tight", pad_inches=0
+        # )
 
     def __repr__(self):
         return_str = f"Amount of boids: {len(self.boids_lst)}"
@@ -139,8 +164,8 @@ class environment:
 
 
 # Create an environment
-# max_size = (500, 500)
-# env = environment(25, max_size)
+max_size = (500, 500)
+env = environment(50, max_size)
 # env.step()
-# env.visualise()
+env.visualise()
 # print(env)
