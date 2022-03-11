@@ -8,7 +8,7 @@ class vector:
         # 2 : x subvector
         # 3 : y subvector
 
-        self.vector[0] = greatness
+        self.set_greatness(greatness)
         self.vector[1] = angle
 
     def set_greatness(self, val: float):
