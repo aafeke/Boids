@@ -1,6 +1,7 @@
 import time
 import math
 
+
 class vector:
     def __init__(self, greatness=0, angle=0):
         # 0 : greatness
@@ -12,7 +13,7 @@ class vector:
         self.vector[1] = angle
 
     def set_greatness(self, val: float):
-        if not val == 0:
+        if val != 0:
             self.vector[0] = val
             self.vector[2] = val * math.cos(self.vector[1])
             self.vector[3] = val * math.sin(self.vector[1])
@@ -27,21 +28,29 @@ class vector:
             self.__reset_time()
 
     def get_delta(self):
-        if self.start_time is not 0:
+        if self.start_time != 0:
             return time.time() - self.start_time
-        else: pass
+        else:
+            pass
 
-    @classmethod
-    def vectoral_add(cls, vec1, vec2):
-        pass
+    # if the + sign is used.
+    def __add__(self, other):
+        x = self[2] + other[2]
+        y = self[3] + other[3]
+
+        greatness = (x**2 + y**2) ** (0.5)
+
+        out = vector()
+        out[0] = greatness
+        out[1] = math.acos(x/greatness) * 180 / math.pi
+        out[2] = x
+        out[3] = y
+        return out
 
     def __set_time(self):
         # Double under score ensures the method is
         # private, used for the sake of information hiding.
- 
         self.start_time = time.time()
 
     def __reset_time(self):
-
         self.start_time = 0
-        pass

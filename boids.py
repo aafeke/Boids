@@ -12,8 +12,9 @@ class boids:
 
     def update(self, neighbours: list):
         self.acceleration = self.force / boids.mass
-        self.acceleration[1] = self.force[1] # Angles are the same
+        self.acceleration[1] = self.force[1]  # angles are the same
         self.velocity += self.acceleration * vector.get_delta()
+        # v_final = v0 + a * t_delta
         pass
 
     def seperation(self, neighbours):
