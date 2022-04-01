@@ -3,13 +3,13 @@ import math
 
 
 class vector:
-    def __init__(self, greatness=0, angle=0):
-        # 0 : greatness
+    def __init__(self, magnitude=0, angle=0):
+        # 0 : magnitude
         # 1 : angle (0-359)
         # 2 : x subvector
         # 3 : y subvector
 
-        self.set_vector(greatness, angle)
+        self.set_vector(magnitude, angle)
 
     def set_vector(self, val: float, ang: int):
         if val != 0:
@@ -18,7 +18,7 @@ class vector:
             self.vector[2] = val * math.cos(self.vector[1])
             self.vector[3] = val * math.sin(self.vector[1])
             # We should get the time in order to
-            # calculate the delta time while greatness of the
+            # calculate the delta time while magnitude of the
             # vector != 0
             self.__set_time()
         else:
@@ -38,11 +38,11 @@ class vector:
         x = self[2] + other[2]
         y = self[3] + other[3]
 
-        out_greatness = (x**2 + y**2) ** (0.5)
-        out_angle = math.acos(x/out_greatness) * 180 / math.pi
+        out_magnitude = (x**2 + y**2) ** (0.5)
+        out_angle = math.acos(x/out_magnitude) * 180 / math.pi
 
         out = vector()
-        out.set_vector(out_greatness, out_angle)
+        out.set_vector(out_magnitude, out_angle)
 
         return out
 
