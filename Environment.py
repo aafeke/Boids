@@ -1,4 +1,4 @@
-import boids
+import boids as boids_lib
 from random import uniform
 import math
 import matplotlib.pyplot as plt
@@ -7,8 +7,9 @@ import time
 
 class environment:
     iter_count = 0
-    debug = True
+    debug = False
     __timer = None
+    max_coords = (500, 500)  # temporary workaround
 
     last_frame_time = None
     boids_lst = []
@@ -40,26 +41,21 @@ class environment:
             # give boids a random location
 
             # add magnitude random generation
-            # rand_magn = uniform(0, self.max_magn)
+            rand_magn = uniform(0, self.max_magn)
 
             rand_cord = (uniform(0, max_coords[0]),
                          uniform(0, max_coords[1]))
 
             rand_angle = uniform(0, 360)
-            boid = boids.boids(
-                rand_cord,
-                rand_angle)
 
+            boid = boids_lib.boids(
+                rand_cord,
+                rand_magn, rand_angle)
+
+            print(boid)
             self.boids_lst.append(boid)
 
-        # create N amount of agents
-        # create a space where they can fly around
-
-        # set upper and lower bounds of the flight zone.
-        # (x_max,y_max) or x_max and y_max
-        pass
-
-    def __gen_next_boid(self, cur_boid: boids, own=False) -> boids:
+    def __gen_next_boid(self, cur_boid, own=False):
         """gen_next_boid generator for next boid
 
         A generator function that loops over every boid
@@ -94,11 +90,11 @@ class environment:
             dx = abs(cur_x - nei_x)
             dy = abs(cur_y - nei_y)
 
-            if dx > (max_size/2):
-                dx = max_size - dx
+            if dx > (max_size[0]/2):
+                dx = max_size[0] - dx
 
-            if dy > (max_size/2):
-                dy = max_size - dy
+            if dy > (max_size[1]/2):
+                dy = max_size[1] - dy
 
             dist = (dx * dx + dy * dy) ** 0.5
 
@@ -109,19 +105,14 @@ class environment:
 
     def step(self):
         self.iter_count += 1
+        self.last_frame_time = time.time()
+
         for cur_boid in self.boids_lst:
             neighbours = self.__find_neighbour_boid(cur_boid)
 
             # Pass the neighbours and delta time as parameter
             cur_boid.update(neighbours, time.time() - self.last_frame_time)
-
-        self.last_frame_time = time.time()
-
-        # call the update function in boid at the end
-        # apply the actions the environment
-        # If action is valid
-        # If not set the boid in a different position.
-        pass
+            print(cur_boid)
 
     def calculate_positions(self, time: float):
         # TODO: Get components of the speed vector
@@ -163,7 +154,7 @@ class environment:
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
         plt.savefig(
-            f"image_{self.iter_count}_{str(time.time())}.png",
+            f"image_{str(time.time())}_{self.iter_count}.png",
             bbox_inches="tight", pad_inches=0
         )
         # plt.savefig(
@@ -176,10 +167,17 @@ class environment:
         return return_str
 
 
-# Create an environment
-max_size = (500, 500)
-min_max_magnitude = (0, 2.5)
-env = environment(50, max_size, min_max_magnitude)
-# env.step()
-env.visualise()
-# print(env)
+if __name__ == "__main__":
+    # Create an environment
+    max_size = (500, 500)
+    min_max_magnitude = (0, 2.5)
+
+    env = environment(100, max_size, min_max_magnitude)
+    env.step()
+    env.visualise()
+    env.step()
+    env.visualise()
+    for i in range(15):
+        env.step()
+    env.visualise()
+    # print(env)
