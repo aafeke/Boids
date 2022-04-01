@@ -6,8 +6,9 @@ import time
 
 
 class environment:
-
+    iter_count = 0
     debug = True
+    __timer = None
 
     last_frame_time = None
     boids_lst = []
@@ -15,7 +16,7 @@ class environment:
     # find a set distance a boid can see
     # find a max distance a boid can fly
 
-    def __init__(self, n: int, max_coords: list):
+    def __init__(self, n: int, max_coords: list, min_max_magn: tuple):
         """__init__ Create  environment with N boids
 
         # min -> 0,0
@@ -32,11 +33,15 @@ class environment:
             Amount of Boids randomly initialised in the simulation
         """
         self.max_coords = max_coords
+        self.min_magn = min_max_magn[0]
+        self.max_magn = min_max_magn[1]
 
         for _ in range(n):
             # give boids a random location
 
-            # TODO: CHANGE THESE TO A RANDOM VECTOR
+            # add magnitude random generation
+            # rand_magn = uniform(0, self.max_magn)
+
             rand_cord = (uniform(0, max_coords[0]),
                          uniform(0, max_coords[1]))
 
@@ -81,10 +86,21 @@ class environment:
         # This can be done using MP.
         neighbour_lst = []
         for neighbour_boid in self.__gen_next_boid(cur_boid):
-            # calculate euclidian distance
+            # calculate euclidian distance with wrap around
+            # https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
             cur_x, cur_y = cur_boid.get_coord()
             nei_x, nei_y = neighbour_boid.get_coord()
-            dist = ((cur_x - nei_x) ** 2 + (cur_y - nei_y) ** 2) ** 0.5
+
+            dx = abs(cur_x - nei_x)
+            dy = abs(cur_y - nei_y)
+
+            if dx > (max_size/2):
+                dx = max_size - dx
+
+            if dy > (max_size/2):
+                dy = max_size - dy
+
+            dist = (dx * dx + dy * dy) ** 0.5
 
             # if in radius of sight.
             if dist <= self.sight_distance:
@@ -92,13 +108,13 @@ class environment:
         return neighbour_lst
 
     def step(self):
+        self.iter_count += 1
         for cur_boid in self.boids_lst:
             neighbours = self.__find_neighbour_boid(cur_boid)
-            cur_boid.update(neighbours)
-            # update right away, loses precision increases speed.
-            # precision loss is insignificant since we don't work with "states"
 
-        self.calculate_positions(time.time() - self.last_frame_time)
+            # Pass the neighbours and delta time as parameter
+            cur_boid.update(neighbours, time.time() - self.last_frame_time)
+
         self.last_frame_time = time.time()
 
         # call the update function in boid at the end
@@ -108,11 +124,9 @@ class environment:
         pass
 
     def calculate_positions(self, time: float):
-        for cur_boid in self.boids_lst:
-            # TODO: Get components of the speed vector
-            # and add it x component to x coord, y to y coord by
-            # multiplying with the delta time
-            break
+        # TODO: Get components of the speed vector
+        # and add it x component to x coord, y to y coord by
+        # multiplying with the delta time
         pass
 
     def visualise(self):
@@ -120,14 +134,12 @@ class environment:
 
         # Circle wont plot without subplot.
         fig, ax = plt.subplots()
-        super_debug = True
         for boid in self.boids_lst:
             x, y = boid.get_coord()
 
             # plot the boid itself
             ax.scatter(x, y, cmap="hsv")
-            if self.debug and super_debug:
-                super_debug = False
+            if self.debug:
                 # plot its sight
                 circle1 = plt.Circle(
                     (x, y), radius=self.sight_distance,
@@ -151,7 +163,8 @@ class environment:
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
         plt.savefig(
-            f"image_{str(time.time())}.png", bbox_inches="tight", pad_inches=0
+            f"image_{self.iter_count}_{str(time.time())}.png",
+            bbox_inches="tight", pad_inches=0
         )
         # plt.savefig(
         #     f"images/image_{str(time.time())}.png",
@@ -165,7 +178,8 @@ class environment:
 
 # Create an environment
 max_size = (500, 500)
-env = environment(50, max_size)
+min_max_magnitude = (0, 2.5)
+env = environment(50, max_size, min_max_magnitude)
 # env.step()
 env.visualise()
 # print(env)
