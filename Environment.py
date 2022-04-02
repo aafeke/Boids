@@ -1,8 +1,24 @@
-import boids as boids_lib
 from random import uniform
-import math
+from PIL import Image
+import boids as boids_lib
 import matplotlib.pyplot as plt
+import math
 import time
+import glob
+import os
+
+
+def make_gif(location):
+    frames = [Image.open(image) for image in glob.glob(f"{location}//*.PNG")]
+    frame_one = frames[0]
+    frame_one.save(
+        "Boid_gif.gif",
+        format="GIF",
+        append_images=frames,
+        save_all=True,
+        duration=100,
+        loop=0,
+    )
 
 
 class environment:
@@ -11,7 +27,7 @@ class environment:
     __timer = None
     max_coords = (500, 500)  # temporary workaround
 
-    last_frame_time = None
+    last_frame_time = time.time()
     boids_lst = []
     sight_distance = 90
     # find a set distance a boid can see
@@ -41,18 +57,13 @@ class environment:
             # give boids a random location
 
             # add magnitude random generation
-            rand_magn = uniform(0, self.max_magn)
+            rand_magn = uniform(self.min_magn, self.max_magn)
 
-            rand_cord = (uniform(0, max_coords[0]),
-                         uniform(0, max_coords[1]))
+            rand_cord = (uniform(0, max_coords[0]), uniform(0, max_coords[1]))
 
             rand_angle = uniform(0, 360)
 
-            boid = boids_lib.boids(
-                rand_cord,
-                rand_magn, rand_angle)
-
-            print(boid)
+            boid = boids_lib.boids(rand_cord, rand_magn, rand_angle)
             self.boids_lst.append(boid)
 
     def __gen_next_boid(self, cur_boid, own=False):
@@ -90,10 +101,10 @@ class environment:
             dx = abs(cur_x - nei_x)
             dy = abs(cur_y - nei_y)
 
-            if dx > (max_size[0]/2):
+            if dx > (max_size[0] / 2):
                 dx = max_size[0] - dx
 
-            if dy > (max_size[1]/2):
+            if dy > (max_size[1] / 2):
                 dy = max_size[1] - dy
 
             dist = (dx * dx + dy * dy) ** 0.5
@@ -108,17 +119,17 @@ class environment:
         self.last_frame_time = time.time()
 
         for cur_boid in self.boids_lst:
+            # print(cur_boid)
             neighbours = self.__find_neighbour_boid(cur_boid)
 
             # Pass the neighbours and delta time as parameter
-            cur_boid.update(neighbours, time.time() - self.last_frame_time)
-            print(cur_boid)
+            cur_boid.update(neighbours, (time.time()) - self.last_frame_time)
 
-    def calculate_positions(self, time: float):
-        # TODO: Get components of the speed vector
-        # and add it x component to x coord, y to y coord by
-        # multiplying with the delta time
-        pass
+    # def calculate_positions(self, time: float):
+    #     # TODO: Get components of the speed vector
+    #     # and add it x component to x coord, y to y coord by
+    #     # multiplying with the delta time
+    #     pass
 
     def visualise(self):
         # TODO: replace with p5.
@@ -133,8 +144,10 @@ class environment:
             if self.debug:
                 # plot its sight
                 circle1 = plt.Circle(
-                    (x, y), radius=self.sight_distance,
-                    fill=False, color="White"
+                    (x, y),
+                    radius=self.sight_distance,
+                    fill=False,
+                    color="White"
                 )
                 ax.add_patch(circle1)
 
@@ -154,13 +167,9 @@ class environment:
         plt.xlim([0, self.max_coords[0]])
         plt.ylim([0, self.max_coords[1]])
         plt.savefig(
-            f"image_{str(time.time())}_{self.iter_count}.png",
-            bbox_inches="tight", pad_inches=0
+            f"images//image_{self.iter_count}.png",
         )
-        # plt.savefig(
-        #     f"images/image_{str(time.time())}.png",
-        #     bbox_inches="tight", pad_inches=0
-        # )
+        plt.close()
 
     def __repr__(self):
         return_str = f"Amount of boids: {len(self.boids_lst)}"
@@ -168,16 +177,21 @@ class environment:
 
 
 if __name__ == "__main__":
+    for filename in os.listdir("images"):
+        os.remove(f"images\\{filename}")
+
+    for file in os.listdir():
+        if file.endswith(".gif"):
+            os.remove(file)
+
     # Create an environment
     max_size = (500, 500)
-    min_max_magnitude = (0, 2.5)
+    min_max_magnitude = (5, 5)
 
-    env = environment(100, max_size, min_max_magnitude)
-    env.step()
-    env.visualise()
-    env.step()
-    env.visualise()
-    for i in range(15):
+    env = environment(1, max_size, min_max_magnitude)
+    for i in range(20):
+        # print(i, end="\r")
         env.step()
-    env.visualise()
-    # print(env)
+        env.visualise()
+
+    make_gif("images")

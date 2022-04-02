@@ -12,7 +12,8 @@ class boids:
 
         self.coord = coord
         self.angle = angle
-        self.force = vector.vector(magnitude=magnitude, angle=angle)
+        self.force = vector.vector(param_magnitude=magnitude,
+                                   param_angle=angle)
         self.acceleration = vector.vector()
         self.velocity = vector.vector()
 
@@ -20,6 +21,7 @@ class boids:
         pass
 
     def update(self, neighbours: list, time_delta: float):
+        # print(time_delta)
         # Assign neighbours
         self.neighbours = neighbours
 
@@ -28,15 +30,14 @@ class boids:
         self.cohesion()
 
         # Calculate new speed
-        self.acceleration.vector[0] = self.force.vector[0] / boids.mass
-        self.acceleration.vector[1] = self.force.vector[1]  # angles are the same
-        self.velocity.vector[0] += self.acceleration.vector[0] * max(time_delta, 0.01) 
-        #self.velocity.vector += self.acceleration.vector
-        print(time_delta)
+        self.acceleration = self.force / boids.mass
+        # a = F / m
+
+        self.velocity += self.acceleration * max(time_delta, 1)
         # v_final = v0 + a * t_delta
 
         # Align boid
-        self.angle = self.velocity.vector[1]
+        self.angle = self.velocity.angle
 
         self.update_coord(time_delta)
         # return
@@ -58,11 +59,16 @@ class boids:
             return (x, y)
         # (x, y) = self.v * environment * t_delta
 
-        x = self.velocity.vector[1] * math.cos(self.velocity.vector[1]) * time_diff
-        y = self.velocity.vector[1] * math.sin(self.velocity.vector[1]) * time_diff
+        # x_final =  x0 + v * t_delta
+        x = self.velocity.magnitude * math.cos(self.velocity.angle) * max(time_diff, 1)
+        y = self.velocity.magnitude * math.sin(self.velocity.angle) * max(time_diff, 1)
 
+        print(f"COORDS: {x}, {y} |\
+                magnitude: {self.velocity.magnitude} |\
+                angle: {self.velocity.angle}")
         self.coord = (self.coord + (x, y))
         self.coord = tuple_modulo(self.coord, env.environment.max_coords)
+        # print(f"COORDS: {self.coord}")
 
     def get_coord(self) -> tuple:
         return self.coord
@@ -71,4 +77,6 @@ class boids:
         return self.angle
 
     def __repr__(self):
-        return f"xy {self.coord} | force: {self.force} | acceleratio: {self.acceleration} | velocity: {self.velocity}"
+        # return f"xy {self.coord} | force: {self.force} | 
+        #   acceleratio: {self.acceleration} | velocity: {self.velocity}"
+        return f"xy {self.coord}  | velocity: {self.velocity}"
