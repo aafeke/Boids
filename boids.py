@@ -8,6 +8,7 @@ class boids:
 
     # def __init__(self, coord: tuple, angle: int, force: vector):
     def __init__(self, coord: tuple, magnitude: int, angle: int):
+        print(f"param_magnitude {magnitude} |  param_angle {angle}")
         self.neighbours = []
 
         self.coord = coord
@@ -60,14 +61,16 @@ class boids:
         # (x, y) = self.v * environment * t_delta
 
         # x_final =  x0 + v * t_delta
-        x = self.velocity.magnitude * math.cos(self.velocity.angle) * max(time_diff, 1)
-        y = self.velocity.magnitude * math.sin(self.velocity.angle) * max(time_diff, 1)
+        time_vec = self.velocity.magnitude * max(time_diff, 1)
+        x = time_vec * math.cos(self.velocity.angle)
+        y = time_vec * math.sin(self.velocity.angle)
 
-        print(f"COORDS: {x}, {y} |\
+        print(f"ADDED COORDS: {x}, {y} |\
                 magnitude: {self.velocity.magnitude} |\
-                angle: {self.velocity.angle}")
-        self.coord = (self.coord + (x, y))
-        self.coord = tuple_modulo(self.coord, env.environment.max_coords)
+                NEW angle: {self.velocity.angle}")
+
+        self.coord = tuple_modulo((self.coord + (x, y)),
+                                  env.environment.max_coords)
         # print(f"COORDS: {self.coord}")
 
     def get_coord(self) -> tuple:
@@ -77,6 +80,6 @@ class boids:
         return self.angle
 
     def __repr__(self):
-        # return f"xy {self.coord} | force: {self.force} | 
+        # return f"xy {self.coord} | force: {self.force} |
         #   acceleratio: {self.acceleration} | velocity: {self.velocity}"
         return f"xy {self.coord}  | velocity: {self.velocity}"
