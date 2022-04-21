@@ -12,28 +12,36 @@ class vector:
         self.angle = ang
 
     def get_sub_X(self):
-        return self.magnitude * math.cos(self.angle)
+        if(self.angle == 0 or self.angle == 360): return 1
+        elif(self.angle == 90 or self.angle == 270): return 0
+        elif(self.angle == 180): return -1
+        else:
+            return self.magnitude * math.cos( math.radians(self.angle) )
 
     def get_sub_Y(self):
-        return self.magnitude * math.sin(self.angle)
+        if(self.angle == 0 or self.angle == 360 or self.angle == 180) : return 0
+        elif(self.angle == 90): return 1
+        elif(self.angle == 270): return -1
+        else:
+            return self.magnitude * math.sin( math.radians(self.angle) )
 
     @classmethod
     def __get_angle(cls, x: int, y: int, mag: int):
         if (x >= 0 and y >= 0):
             # area 1
-            angle = (0 + math.acos(x/mag)) * 180 / math.pi
+            angle = math.degrees( 0 + math.acos(x/mag) )
 
         elif (x <= 0 and y >= 0):
             # area 2
-            angle = (math.pi - math.acos(x/mag)) * 180 / math.pi
+            angle = math.degrees( 180 - math.acos(x/mag) )
 
         elif (x <= 0 and y <= 0):
             # area 3
-            angle = (math.pi + math.acos(x/mag)) * 180 / math.pi
+            angle = math.degrees( 180 + math.acos(x/mag) )
 
         else:
             # area 4
-            angle = (2 * math.pi - math.acos(x/mag)) * 180 / math.pi
+            angle = math.degrees( 2 * 180 - math.acos(x/mag) )
         return angle
 
     def __repr__(self) -> str:
