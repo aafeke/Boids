@@ -17,6 +17,25 @@ class vector:
     def get_sub_Y(self):
         return self.magnitude * math.sin(self.angle)
 
+    @classmethod
+    def __get_angle(cls, x: int, y: int, mag: int):
+        if (x >= 0 and y >= 0):
+            # area 1
+            angle = (0 + math.acos(x/mag)) * 180 / math.pi
+
+        elif (x <= 0 and y >= 0):
+            # area 2
+            angle = (math.pi - math.acos(x/mag)) * 180 / math.pi
+
+        elif (x <= 0 and y <= 0):
+            # area 3
+            angle = (math.pi + math.acos(x/mag)) * 180 / math.pi
+
+        else:
+            # area 4
+            angle = (2 * math.pi - math.acos(x/mag)) * 180 / math.pi
+        return angle
+
     def __repr__(self) -> str:
         return f"Mag: {self.magnitude}, Ang: {self.angle}"
 
@@ -34,26 +53,7 @@ class vector:
             y = self_y + other_y
 
             out_magnitude = (x**2 + y**2) ** (0.5)
-
-            if (x >= 0 and y >= 0):
-                # area 1
-                out_angle = (0 + math.acos(x/out_magnitude)) * 180 / math.pi
-
-            elif (x <= 0 and y >= 0):
-                # area 2
-                out_angle = (180 - math.asin(y/out_magnitude)) * 180 / math.pi
-
-            elif (x <= 0 and y <= 0):
-                # area 3
-                out_angle = (180 + math.asin(y/out_magnitude)) * 180 / math.pi
-
-            else:
-                # area 4
-                out_angle = (360 - math.acos(x/out_magnitude)) * 180 / math.pi
-
-            # out_angle = math.acos(x/out_magnitude) * 180 / math.pi
-            # if(y < 0):
-            #    out_angle = (360 - math.acos(x/out_magnitude)) * 180 / math.pi
+            out_angle = vector.__get_angle(x, y, out_magnitude)
 
             return vector(out_magnitude, out_angle)
 
