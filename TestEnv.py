@@ -160,7 +160,7 @@ if __name__ == "__main__":
     env = environment(1, max_size, min_max_magnitude)
 
     # iterate 20 steps
-    for i in range(100):
+    for i in range(20):
         print(i, end="\r")
         env.step()
         env.visualise()
