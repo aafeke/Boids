@@ -8,9 +8,6 @@ import vector
 
 
 class Object():
-    # force = vector.vector()
-    # acc = vector.vector()
-    # vel = vector.vector()
 
     def __init__(self, mag=5, angle=0, coord=(5, 5), max_coord=(500, 500)):
         self.max_coords = max_coord
@@ -57,7 +54,6 @@ class Object():
         return
 
     def get_coord(self):
-        # print(self.coord)
         return self.coord
 
     def get_angle(self):
@@ -90,7 +86,7 @@ class environment:
         new_coords = (max_coords[0]/2,
                       max_coords[1]/2)
 
-        angle = 0
+        angle = 180
         self.test_object = Object(mag=magnitude,
                                   coord=new_coords,
                                   angle=angle,
@@ -99,6 +95,8 @@ class environment:
     def step(self):
         self.iter_count += 1
         self.test_object.calc()
+        x, y = self.test_object.get_coord()
+        print(f"X: {x}, Y: {y}, Ang: {self.test_object.vel.angle}")
 
     def visualise(self):
         fig, ax = plt.subplots()
@@ -112,8 +110,8 @@ class environment:
         arrow_size = 13
 
         # polar coordinate system
-        new_x = arrow_size * math.cos(angle)
-        new_y = arrow_size * math.sin(angle)
+        new_x = arrow_size * math.cos( math.radians(angle) )
+        new_y = arrow_size * math.sin( math.radians(angle) )
         ax.plot((x, x + new_x), (y, y + new_y))
 
         # plot settings
