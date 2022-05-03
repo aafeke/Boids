@@ -37,9 +37,8 @@ class vector:
 
     @classmethod
     def __get_angle(cls, x: int, y: int, mag: int):
-        print(x, y)
+        # print(x, y)
         if mag == 0:
-            print("mag0", end=" ")
             return 0
 
         elif y >= 0:

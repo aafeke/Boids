@@ -96,7 +96,7 @@ class environment:
         self.iter_count += 1
         self.test_object.calc()
         x, y = self.test_object.get_coord()
-        print(f"X: {x}, Y: {y}, Ang: {self.test_object.vel.angle}")
+        # print(f"X: {x}, Y: {y}, Ang: {self.test_object.vel.angle}")
 
     def visualise(self):
         fig, ax = plt.subplots()
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     # iterate 20 steps
     for i in range(20):
-        print(i, end="\r")
+        print(i)
         env.step()
         env.visualise()
 
