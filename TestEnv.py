@@ -86,7 +86,7 @@ class environment:
         new_coords = (max_coords[0]/2,
                       max_coords[1]/2)
 
-        angle = 180
+        angle = int(input("how many degrees?\n"))
         self.test_object = Object(mag=magnitude,
                                   coord=new_coords,
                                   angle=angle,
@@ -110,8 +110,8 @@ class environment:
         arrow_size = 13
 
         # polar coordinate system
-        new_x = arrow_size * math.cos( math.radians(angle) )
-        new_y = arrow_size * math.sin( math.radians(angle) )
+        new_x = arrow_size * math.cos(math.radians(angle))
+        new_y = arrow_size * math.sin(math.radians(angle))
         ax.plot((x, x + new_x), (y, y + new_y))
 
         # plot settings
@@ -126,7 +126,7 @@ class environment:
             bbox_inches='tight',
             pad_inches=0
             )
-        
+
         plt.close()
 
 

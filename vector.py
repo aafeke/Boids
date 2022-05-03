@@ -2,6 +2,8 @@ import math
 
 
 class vector:
+    zero_precision = 10*(10**-10)
+
     def __init__(self, param_magnitude=0, param_angle=0):
         self.magnitude = 0
         self.angle = 0
@@ -15,41 +17,38 @@ class vector:
         """
         Returns the x-axis component vector's magnitude
         """
-        if(self.angle == 0 or self.angle == 360):     return self.magnitude * 1
-        elif(self.angle == 90 or self.angle == 270):  return 0
-        elif(self.angle == 180):                      return self.magnitude * -1
-        else:
-            return self.magnitude * math.cos( math.radians(self.angle) )
+        val = math.cos(math.radians(self.angle))
+
+        if abs(val) < self.zero_precision:
+            return 0
+
+        return self.magnitude * val
 
     def get_sub_Y(self) -> int:
         """
         Returns the y-axis component vector's magnitude
         """
-        if(self.angle == 0 or self.angle == 360 or self.angle == 180): return 0
-        elif(self.angle == 90):  return self.magnitude * 1
-        elif(self.angle == 270): return self.magnitude * -1
-        else:
-            return self.magnitude * math.sin( math.radians(self.angle) )
+        val = math.sin(math.radians(self.angle))
+
+        if abs(val) < self.zero_precision:
+            return 0
+
+        return self.magnitude * val
 
     @classmethod
     def __get_angle(cls, x: int, y: int, mag: int):
-        if mag == 0: return 0
+        print(x, y)
+        if mag == 0:
+            print("mag0", end=" ")
+            return 0
 
-        elif (x >= 0 and y >= 0):
-            # quadrant 1
-            angle = math.degrees( 0 + math.acos(x/mag) )
-
-        elif (x <= 0 and y >= 0):
-            # quadrant 2
-            angle = math.degrees( math.acos(x/mag) )
-
-        elif (x <= 0 and y <= 0):
-            # quadrant 3
-            angle = math.degrees( math.pi + math.acos(x/mag) )
+        elif y >= 0:
+            # quadrant 1 & 2
+            angle = math.degrees(math.acos(x / mag))
 
         else:
-            # quadrant 4
-            angle = math.degrees( 2 * math.pi - math.acos(x/mag) )
+            # quadrant 3 & 4
+            angle = math.degrees(2 * math.pi - math.acos(x / mag))
         return angle
 
     def __repr__(self) -> str:
@@ -68,7 +67,7 @@ class vector:
             x = self_x + other_x
             y = self_y + other_y
 
-            out_magnitude = (x**2 + y**2) ** (0.5)
+            out_magnitude = (x ** 2 + y ** 2) ** (0.5)
             out_angle = vector.__get_angle(x, y, out_magnitude)
 
             return vector(out_magnitude, out_angle)
@@ -76,6 +75,6 @@ class vector:
     # if the * sign is used.
     def __mul__(self, const: int):
         return vector(self.magnitude * const, self.angle)
-    
+
     def __truediv__(self, const: int):
         return vector(self.magnitude / const, self.angle)
