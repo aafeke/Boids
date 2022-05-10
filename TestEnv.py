@@ -1,10 +1,7 @@
-from PIL import Image
-import matplotlib.pyplot as plt
-import math
-import glob
-import os
 import time
 import vector
+import operator
+import pygame
 
 
 class Object():
@@ -30,11 +27,6 @@ class Object():
 
     def calc(self, delta_time=1):  # Delta time will be told by env
 
-        def tuple_modulo(tup1, tup2):
-            x = tup1[0] % tup2[0]
-            y = tup1[1] % tup2[1]
-            return (x, y)
-
         # Set force to 0 if time treshold exceeded
         self.timeout_force()
 
@@ -50,7 +42,10 @@ class Object():
         self.coord = (self.vel.get_sub_X() * delta_time + self.coord[0],
                       self.vel.get_sub_Y() * delta_time + self.coord[1])
 
-        self.coord = tuple_modulo(self.coord, self.max_coords)
+        self.coord = tuple(map(operator.mod,
+                               self.coord,
+                               self.max_coords))
+
         return
 
     def get_coord(self):
@@ -95,72 +90,62 @@ class environment:
     def step(self):
         self.iter_count += 1
         self.test_object.calc()
-        x, y = self.test_object.get_coord()
+        # x, y = self.test_object.get_coord()
         # print(f"X: {x}, Y: {y}, Ang: {self.test_object.vel.angle}")
 
     def visualise(self):
-        fig, ax = plt.subplots()
-
-        x, y = self.test_object.get_coord()
-
-        ax.scatter(x, y, cmap="hsv")
-
-        # plot direction
-        angle = self.test_object.get_angle()
-        arrow_size = 13
-
-        # polar coordinate system
-        new_x = arrow_size * math.cos(math.radians(angle))
-        new_y = arrow_size * math.sin(math.radians(angle))
-        ax.plot((x, x + new_x), (y, y + new_y))
-
-        # plot settings
-        ax.set_aspect("equal", adjustable="box")
-        plt.style.use("dark_background")
-        plt.tight_layout()
-        plt.axis("off")
-        plt.xlim([0, self.max_coords[0]])
-        plt.ylim([0, self.max_coords[1]])
-        plt.savefig(
-            f"images//image_{self.iter_count}.png",
-            bbox_inches='tight',
-            pad_inches=0
-            )
-
-        plt.close()
-
-
-def make_gif(location):
-    frames = [Image.open(image) for image in glob.glob(f"{location}//*.PNG")]
-    frame_one = frames[0]
-    frame_one.save(
-        "Boid_gif.gif",
-        format="GIF",
-        append_images=frames,
-        save_all=True,
-        duration=100,
-        loop=0,
-    )
+        # TODO: return a surface for pygame
+        pass
 
 
 if __name__ == "__main__":
-    for filename in os.listdir("images"):
-        os.remove(f"images\\{filename}")
+    pygame.init()
 
-    for file in os.listdir():
-        if file.endswith(".gif"):
-            os.remove(file)
-
-    # Create an environment
-    max_size = (500, 500)
+    # Enviroment variables
+    n = 500
+    canvas_size = (1000, 1000)
+    screen_size = (750, 750)
     min_max_magnitude = (5, 5)
 
-    env = environment(1, max_size, min_max_magnitude)
+    # Make screen
+    screen = pygame.display.set_mode(screen_size)
 
-    # iterate 20 steps
-    for i in range(20):
-        print(i)
+    env = environment(1, canvas_size, min_max_magnitude)
+
+    clock = pygame.time.Clock()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
         env.step()
-        env.visualise()
 
-    make_gif("images")
+        # Make surface
+        surf1 = pygame.Surface(canvas_size)
+
+        # make background
+        surf1.fill((0, 0, 0))
+
+        pygame.draw.circle(surf1,                       # Surface to draw on
+                           (255, 255, 255),             # colour
+                           env.test_object.coord,       # coordinate
+                           3)                           # size
+        # TODO: replace circle with actual sprite
+
+        # Scale the grid to the size of the screen
+        scaled_surface = pygame.transform.scale(surf1, screen_size)
+
+        # Draw screen?
+        screen.blit(scaled_surface, (0, 0))
+
+        # Show screen
+        pygame.display.update()
+
+        # time.sleep 100 MS
+        # FIXME
+        pygame.time.wait(100)
+
+        # Get FPS
+        # clock.tick()
+        # print(clock.get_fps())

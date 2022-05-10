@@ -1,28 +1,32 @@
-import Environment as env
 import vector
-import math
+import time
 
 
 class boids:
-    mass = 1
-
     # def __init__(self, coord: tuple, angle: int, force: vector):
     def __init__(self, coord: tuple, magnitude: int, angle: int):
         print(f"param_magnitude {magnitude} |  param_angle {angle}")
         self.neighbours = []
 
-        self.coord = coord
-        self.angle = angle
-        self.force = vector.vector(param_magnitude=magnitude,
-                                   param_angle=angle)
-        self.acceleration = vector.vector()
-        self.velocity = vector.vector()
+        self.mass = 1
 
-        # self.update()
+        self.acc = vector.vector()
+        self.vel = vector.vector()
+        self.force = vector.vector()
+
+        self.angle = angle
+        self.coord = coord
+
+        self.acc.set_vector(0, 0)
+        self.vel.set_vector(0, 0)
+        self.force.set_vector(magnitude, angle)
+
+        self.counter = time.time()
+
+        self.update([], 0)  # initial update
         pass
 
     def update(self, neighbours: list, time_delta: float):
-        # print(time_delta)
         # Assign neighbours
         self.neighbours = neighbours
 
@@ -30,54 +34,60 @@ class boids:
         self.alignment()
         self.cohesion()
 
-        # Calculate new speed
-        self.acceleration = self.force / boids.mass
-        # a = F / m
-
-        self.velocity += self.acceleration * max(time_delta, 1)
-        # v_final = v0 + a * t_delta
-
-        # Align boid
-        self.angle = self.velocity.angle
-
-        self.update_coord(time_delta)
+        self.calc(time_delta)
         # return
 
     def seperation(self):
+        """GTFO togeher function"""
         pass
 
     def alignment(self):
+        """All togeher function"""
         pass
 
     def cohesion(self):
-        """GTFO function"""
+        """GTFO 2 function"""
         pass
 
-    def update_coord(self, time_diff):
-        def tuple_modulo(tup1, tup2):
-            x = tup1[0] % tup2[0]
-            y = tup1[1] % tup2[1]
-            return (x, y)
-        # (x, y) = self.v * environment * t_delta
+    def calc(self, delta_time):
+        # debug
+        delta_time = 1
 
-        # x_final =  x0 + v * t_delta
-        time_vec = self.velocity.magnitude * max(time_diff, 1)
-        x = time_vec * math.cos(self.velocity.angle)
-        y = time_vec * math.sin(self.velocity.angle)
+        # Set force to 0 if time treshold exceeded
+        self.timeout_force()
 
-        print(f"ADDED COORDS: {x}, {y} |\
-                magnitude: {self.velocity.magnitude} |\
-                NEW angle: {self.velocity.angle}")
+        self.acc = self.force  # F=m.a, when m=1 => a=F
+        self.vel = self.vel + (self.acc * delta_time)  # V = V0 + a * delta_T
 
-        self.coord = tuple_modulo((self.coord + (x, y)),
-                                  env.environment.max_coords)
-        # print(f"COORDS: {self.coord}")
+        # Align object
+        self.align()
+
+        # Calculate the substitution
+        # x = x0 + v * delta_t
+
+        self.coord = (self.vel.get_sub_X() * delta_time + self.coord[0],
+                      self.vel.get_sub_Y() * delta_time + self.coord[1])
 
     def get_coord(self) -> tuple:
         return self.coord
 
     def get_angle(self) -> int:
         return self.angle
+
+    def set_force(self, mag, ang):
+        self.force.set_vector(mag, ang)
+        self.set_counter()
+
+    def set_counter(self):
+        self.counter = time.time()
+        pass
+
+    def timeout_force(self):
+        if time.time() - self.counter >= 0.3:
+            self.force.set_vector(0, 0)
+
+    def align(self):
+        self.angle = self.vel.angle
 
     def __repr__(self):
         # return f"xy {self.coord} | force: {self.force} |

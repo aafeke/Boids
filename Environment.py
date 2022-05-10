@@ -6,6 +6,7 @@ import math
 import time
 import glob
 import os
+import operator
 
 
 def make_gif(location):
@@ -84,6 +85,9 @@ class environment:
         Iterator[boids]
             a boid
         """
+        # TODO Find index of current boid
+        # start from there.
+
         for next_boid in self.boids_lst:
             if next_boid == cur_boid:
                 continue
@@ -122,17 +126,19 @@ class environment:
             # print(cur_boid)
             neighbours = self.__find_neighbour_boid(cur_boid)
 
+            # TODO: add for all neighbours the cur_boid.
+
             # Pass the neighbours and delta time as parameter
             cur_boid.update(neighbours, (time.time()) - self.last_frame_time)
+            # cur_boid.update(neighbours, 1)
 
-    # def calculate_positions(self, time: float):
-    #     # TODO: Get components of the speed vector
-    #     # and add it x component to x coord, y to y coord by
-    #     # multiplying with the delta time
-    #     pass
+            # Redraw boid at the other edge if exceeds
+            cur_boid.coord = tuple(map(operator.mod,
+                                       cur_boid.coord,
+                                       self.max_coords))
 
     def visualise(self):
-        # TODO: replace with p5.
+        # TODO: replace with pygame.
 
         # Circle wont plot without subplot.
         fig, ax = plt.subplots()
@@ -153,10 +159,10 @@ class environment:
 
             # plot direction
             angle = boid.get_angle()
-            arrow_size = 13
+            arrow_size = 20
             # polar coordinate system
-            new_x = arrow_size * math.cos(angle)
-            new_y = arrow_size * math.sin(angle)
+            new_x = arrow_size * math.cos(math.radians(angle))
+            new_y = arrow_size * math.sin(math.radians(angle))
             ax.plot((x, x + new_x), (y, y + new_y))
 
         # plot settings
@@ -185,12 +191,12 @@ if __name__ == "__main__":
             os.remove(file)
 
     # Create an environment
-    max_size = (500, 500)
+    max_size = (1000, 1000)
     min_max_magnitude = (5, 5)
 
     env = environment(1, max_size, min_max_magnitude)
     for i in range(20):
-        # print(i, end="\r")
+        print(i)
         env.step()
         env.visualise()
 
