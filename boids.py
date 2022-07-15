@@ -9,7 +9,7 @@ class boids:
         self.max_vel = 10
         self.max_mag = 3
 
-        self.neighbours = []
+        self.neighbours = set()
 
         self.mass = 1
 
@@ -26,13 +26,10 @@ class boids:
 
         self.counter = time.time()
 
-        self.update([], 0)  # initial update
+        self.update(0)  # initial update
         pass
 
-    def update(self, neighbours: list, time_delta: float):
-        # Assign neighbours
-        self.neighbours = neighbours
-
+    def update(self, time_delta: float):
         self.seperation()
         self.alignment()
         self.cohesion()
@@ -109,6 +106,12 @@ class boids:
 
     def get_angle(self) -> int:
         return self.angle
+
+    def add_neighbour(self, boid):
+        self.neighbours.add(boid)
+
+    def reset_neighbour(self):
+        self.neighbours = set()
 
     def set_force(self, mag, ang):
         self.force.set_vector(mag, ang)

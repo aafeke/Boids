@@ -7,6 +7,7 @@ import time
 import glob
 import os
 import operator
+import pygame
 
 # SOME GLOBAL STUFF
 max_vel = 10
@@ -22,7 +23,7 @@ def make_gif(location):
         format="GIF",
         append_images=frames,
         save_all=True,
-        duration=100,
+        duration=50,
         loop=0,
     )
 
@@ -76,36 +77,9 @@ class environment:
             boid = boids_lib.boids(rand_cord, rand_magn, rand_angle)
             self.boids_lst.append(boid)
 
-    def __gen_next_boid(self, cur_boid, own=False):
-        """gen_next_boid generator for next boid
-
-        A generator function that loops over every boid
-        returns a boid back as a variable
-
-        Parameters
-        ----------
-        boid : boids
-            the current boid
-        own : bool, optional
-            To give itself back, by default False
-
-        Yields
-        ------
-        Iterator[boids]
-            a boid
-        """
-        # TODO Find index of current boid
-        # start from there.
-
-        for next_boid in self.boids_lst:
-            if next_boid == cur_boid:
-                continue
-            yield next_boid
-
     def __find_neighbour_boid(self, cur_boid):
-        # This can be done using MP.
-        neighbour_lst = []
-        for neighbour_boid in self.__gen_next_boid(cur_boid):
+        next_boids_lst = self.boids_lst.index(cur_boid)
+        for neighbour_boid in self.boids_lst[next_boids_lst:]:
             # calculate euclidian distance with wrap around
             # https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
             cur_x, cur_y = cur_boid.get_coord()
@@ -124,65 +98,26 @@ class environment:
 
             # if in radius of sight.
             if dist <= self.sight_distance:
-                neighbour_lst.append(neighbour_boid)
-        return neighbour_lst
+                cur_boid.add_neighbour(neighbour_boid)
+                neighbour_boid.add_neighbour(cur_boid)
 
     def step(self):
         self.iter_count += 1
         self.last_frame_time = time.time()
 
+        for boid in self.boids_lst:
+            boid.reset_neighbour()
+
         for cur_boid in self.boids_lst:
-            neighbours = self.__find_neighbour_boid(cur_boid)
-            # TODO: add for all neighbours the cur_boid.
+            self.__find_neighbour_boid(cur_boid)
 
             # Pass the neighbours and delta time as parameter
-            cur_boid.update(neighbours, (time.time()) - self.last_frame_time)
-            # cur_boid.update(neighbours, 1)
+            cur_boid.update(time.time() - self.last_frame_time)
 
             # Redraw boid at the other edge if exceeds
             cur_boid.coord = tuple(map(operator.mod,
                                        cur_boid.coord,
                                        self.max_coords))
-
-    def visualise(self):
-        # TODO: replace with pygame.
-
-        # Circle wont plot without subplot.
-        fig, ax = plt.subplots()
-        for boid in self.boids_lst:
-            x, y = boid.get_coord()
-
-            # plot the boid itself
-            ax.scatter(x, y, cmap="hsv")
-            if self.debug:
-                # plot its sight
-                circle1 = plt.Circle(
-                    (x, y),
-                    radius=self.sight_distance,
-                    fill=False,
-                    color="White"
-                )
-                ax.add_patch(circle1)
-
-            # plot direction
-            angle = boid.get_angle()
-            arrow_size = 20
-
-            # polar coordinate system
-            new_x = arrow_size * math.cos(math.radians(angle))
-            new_y = arrow_size * math.sin(math.radians(angle))
-            ax.plot((x, x + new_x), (y, y + new_y))
-
-        ax.set_aspect("equal", adjustable="box")
-        plt.style.use("dark_background")
-        plt.tight_layout()
-        plt.axis("off")
-        plt.xlim([0, self.max_coords[0]])
-        plt.ylim([0, self.max_coords[1]])
-        plt.savefig(
-            f"images//image_{self.iter_count}.png",
-        )
-        plt.close()
 
     def __repr__(self):
         return_str = f"Amount of boids: {len(self.boids_lst)}"
@@ -200,17 +135,83 @@ if __name__ == "__main__":
         if file.endswith(".gif"):
             os.remove(file)
 
+    # size of visualisation
+    screen_size = (750, 750)
+
+    # pygame setup
+    pygame.init()
+    screen = pygame.display.set_mode(screen_size)
+    clock = pygame.time.Clock()
+
     # Create an environment
+    # TODO: make boid_amount a variable in a global file
+    boid_amount = 50
+
     # TODO: make max_size a variable in a global file
     max_size = (1000, 1000)
 
     # TODO: make min_max_magnitude a variable in a global file
     min_max_magnitude = (5, 5)
 
-    env = environment(50, max_size, min_max_magnitude)
-    for i in range(250):
-        print(i)
-        env.step()
-        env.visualise()
+    env = environment(boid_amount,
+                      max_size,
+                      min_max_magnitude)
+    try:
+        # main loop
+        image_counter = -1
+        while True:
+            image_counter += 1
+            print(image_counter)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    raise KeyboardInterrupt
 
-    make_gif(f"{dir_path}/images/")
+
+            env.step()
+            # make new layer
+            surf1 = pygame.Surface(max_size)
+
+            # set background colour
+            surf1.fill((0, 0, 0))
+
+            # for every boid
+            for boid in env.boids_lst:
+                x, y = boid.get_coord()
+
+                # draw boid itself
+                pygame.draw.circle(surf1,               # surface to draw on
+                                   (255, 255, 255),     # colour
+                                   (x, y),              # coordinate
+                                   5)                   # size
+
+                # draw direction
+                angle = boid.get_angle()
+                arrow_size = 20
+                new_x = arrow_size * math.cos(math.radians(angle))
+                new_y = arrow_size * math.sin(math.radians(angle))
+                pygame.draw.line(surf1, (255, 255, 255),
+                                 (x, y),
+                                 (x + new_x, y + new_y),
+                                 3)
+
+            # Scale the grid to the size of the screen
+            scaled_surface = pygame.transform.scale(surf1, screen_size)
+
+            # flip screen
+            scaled_surface = pygame.transform.flip(scaled_surface, False, True)
+
+            pygame.image.save(scaled_surface,
+                              f"images/image_{image_counter}.png")
+
+            # draw screen
+            screen.blit(scaled_surface, (0, 0))
+
+            # show screen'
+            pygame.display.update()
+
+            # time.sleep
+            # pygame.time.wait(50)
+
+    except KeyboardInterrupt:
+        make_gif(f"{dir_path}/images/")
+        exit(0)

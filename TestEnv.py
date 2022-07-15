@@ -136,8 +136,7 @@ if __name__ == "__main__":
         # Scale the grid to the size of the screen
         scaled_surface = pygame.transform.scale(surf1, screen_size)
 
-        # flip screen
-        scaled_surface = pygame.transform.flip(scaled_surface, False, True)
+
 
         # Draw screen?
         screen.blit(scaled_surface, (0, 0))
