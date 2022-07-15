@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import pygame
-
+# import operator
 
 n = 500
 canvas_size = (1000, 1000)
@@ -55,10 +55,17 @@ while True:
     surf1.fill((0, 0, 0))
 
     for boid_coord in random_points:
+        # boid_coord_plus1 = tuple(map(operator.add,
+        #                              boid_coord,
+        #                              (1, 1)))
+
         pygame.draw.circle(surf1, (255, 255, 255), boid_coord, 1)
+        # pygame.draw.line(surf1, (255, 255, 255),
+        #                   boid_coord, boid_coord_plus1, 1)
+        # line(surface, color, start_pos, end_pos, width=1)
 
     scaled_surface = pygame.transform.scale(surf1, screen_size)
     screen.blit(scaled_surface, (0, 0))
     pygame.display.update()
     clock.tick()
-    print(clock.get_fps())
+    # print(clock.get_fps())

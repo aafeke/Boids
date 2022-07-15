@@ -8,9 +8,14 @@ import glob
 import os
 import operator
 
+# SOME GLOBAL STUFF
+max_vel = 10
+max_mag = 3
+#  ---------------
+
 
 def make_gif(location):
-    frames = [Image.open(image) for image in glob.glob(f"{location}//*.PNG")]
+    frames = [Image.open(image) for image in glob.glob(f"{location}/*.png")]
     frame_one = frames[0]
     frame_one.save(
         "Boid_gif.gif",
@@ -26,10 +31,14 @@ class environment:
     iter_count = 0
     debug = False
     __timer = None
+
+    # TODO: make max_coords a variable in a global file
     max_coords = (500, 500)  # temporary workaround
 
     last_frame_time = time.time()
     boids_lst = []
+
+    # TODO: make sight_distance a variable in a global file
     sight_distance = 90
     # find a set distance a boid can see
     # find a max distance a boid can fly
@@ -123,9 +132,7 @@ class environment:
         self.last_frame_time = time.time()
 
         for cur_boid in self.boids_lst:
-            # print(cur_boid)
             neighbours = self.__find_neighbour_boid(cur_boid)
-
             # TODO: add for all neighbours the cur_boid.
 
             # Pass the neighbours and delta time as parameter
@@ -160,12 +167,12 @@ class environment:
             # plot direction
             angle = boid.get_angle()
             arrow_size = 20
+
             # polar coordinate system
             new_x = arrow_size * math.cos(math.radians(angle))
             new_y = arrow_size * math.sin(math.radians(angle))
             ax.plot((x, x + new_x), (y, y + new_y))
 
-        # plot settings
         ax.set_aspect("equal", adjustable="box")
         plt.style.use("dark_background")
         plt.tight_layout()
@@ -183,21 +190,27 @@ class environment:
 
 
 if __name__ == "__main__":
-    for filename in os.listdir("images"):
-        os.remove(f"images\\{filename}")
+    dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    for file in os.listdir():
+    for filename in os.listdir(f"{dir_path}/images"):
+        if filename is not None:
+            os.remove(f"{dir_path}/images/{filename}")
+
+    for file in os.listdir(f"{dir_path}"):
         if file.endswith(".gif"):
             os.remove(file)
 
     # Create an environment
+    # TODO: make max_size a variable in a global file
     max_size = (1000, 1000)
+
+    # TODO: make min_max_magnitude a variable in a global file
     min_max_magnitude = (5, 5)
 
-    env = environment(1, max_size, min_max_magnitude)
-    for i in range(20):
+    env = environment(50, max_size, min_max_magnitude)
+    for i in range(250):
         print(i)
         env.step()
         env.visualise()
 
-    make_gif("images")
+    make_gif(f"{dir_path}/images/")

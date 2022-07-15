@@ -1,11 +1,14 @@
 import vector
 import time
+import math
 
 
 class boids:
     # def __init__(self, coord: tuple, angle: int, force: vector):
     def __init__(self, coord: tuple, magnitude: int, angle: int):
-        print(f"param_magnitude {magnitude} |  param_angle {angle}")
+        self.max_vel = 10
+        self.max_mag = 3
+
         self.neighbours = []
 
         self.mass = 1
@@ -38,8 +41,35 @@ class boids:
         # return
 
     def seperation(self):
-        """GTFO togeher function"""
-        pass
+        def pyth(num1, num2):
+            """Pythagoras theory
+
+            Args:
+                num1 (float): first number to be squared
+                num2 (float): second number to be squared
+
+            Returns:
+                float: root square of sum of inputs
+            """
+            return math.sqrt(num1 * num1 + num2 * num2)
+
+        # TODO: make collision_dist a variable in a global file
+        collision_dist = 7
+
+        for other in self.neighbours:
+
+            dx = abs(self.get_coord()[0] - other.get_coord()[0])
+            dy = abs(self.get_coord()[1] - other.get_coord()[1])
+
+            distance = pyth(dx, dy)
+            if(distance > collision_dist):
+                inverse_dist = ((collision_dist - distance) * 5)/collision_dist
+                # https://www.desmos.com/calculator/nflz1fbzgb
+
+                # move away
+                push = vector.vector(inverse_dist,
+                                     (other.get_angle() + 180) % 360)
+                self.set_force_v(self.force + push)
 
     def alignment(self):
         """All togeher function"""
@@ -54,19 +84,25 @@ class boids:
         delta_time = 1
 
         # Set force to 0 if time treshold exceeded
-        self.timeout_force()
 
-        self.acc = self.force  # F=m.a, when m=1 => a=F
-        self.vel = self.vel + (self.acc * delta_time)  # V = V0 + a * delta_T
+        # TODO: remove this commented line
+        # self.timeout_force() screw you lmao
+
+        # F=m*a, when m=1 => a=F
+        self.acc = self.force
+
+        # V = V0 + a * delta_T
+        self.vel = self.vel + (self.acc * delta_time)
+        self.vel.magnitude = min(self.max_vel,
+                                 self.vel.magnitude)
 
         # Align object
         self.align()
 
         # Calculate the substitution
         # x = x0 + v * delta_t
-
-        self.coord = (self.vel.get_sub_X() * delta_time + self.coord[0],
-                      self.vel.get_sub_Y() * delta_time + self.coord[1])
+        self.coord = (self.coord[0] + self.vel.get_sub_X() * delta_time,
+                      self.coord[1] + self.vel.get_sub_Y() * delta_time)
 
     def get_coord(self) -> tuple:
         return self.coord
@@ -76,6 +112,12 @@ class boids:
 
     def set_force(self, mag, ang):
         self.force.set_vector(mag, ang)
+        self.set_counter()
+
+    def set_force_v(self, new_vector: vector.vector):
+        new_vector.magnitude = min(new_vector.magnitude,
+                                   self.max_mag)
+        self.force = new_vector
         self.set_counter()
 
     def set_counter(self):

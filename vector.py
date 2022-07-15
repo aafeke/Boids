@@ -71,6 +71,7 @@ class vector:
 
             return vector(out_magnitude, out_angle)
 
+        
     # if the * sign is used.
     def __mul__(self, const: int):
         return vector(self.magnitude * const, self.angle)

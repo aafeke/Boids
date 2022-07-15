@@ -25,7 +25,7 @@ class Object():
 
         return
 
-    def calc(self, delta_time=1):  # Delta time will be told by env
+    def calc(self, delta_time=1) -> None:  # Delta time will be told by env
 
         # Set force to 0 if time treshold exceeded
         self.timeout_force()
@@ -136,15 +136,18 @@ if __name__ == "__main__":
         # Scale the grid to the size of the screen
         scaled_surface = pygame.transform.scale(surf1, screen_size)
 
+        # flip screen
+        scaled_surface = pygame.transform.flip(scaled_surface, False, True)
+
         # Draw screen?
         screen.blit(scaled_surface, (0, 0))
 
         # Show screen
         pygame.display.update()
 
-        # time.sleep 100 MS
         # FIXME
-        pygame.time.wait(100)
+        # time.sleep 100 MS
+        pygame.time.wait(50)
 
         # Get FPS
         # clock.tick()
