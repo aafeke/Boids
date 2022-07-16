@@ -8,7 +8,6 @@ import glob
 import os
 import operator
 import pygame
-import random
 
 # SOME GLOBAL STUFF
 max_vel = 10
