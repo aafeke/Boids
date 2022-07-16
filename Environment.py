@@ -1,4 +1,4 @@
-from random import uniform
+from random import randint, uniform
 from PIL import Image
 import boids as boids_lib
 import matplotlib.pyplot as plt
@@ -8,6 +8,7 @@ import glob
 import os
 import operator
 import pygame
+import random
 
 # SOME GLOBAL STUFF
 max_vel = 10
@@ -178,9 +179,12 @@ if __name__ == "__main__":
             for boid in env.boids_lst:
                 x, y = boid.get_coord()
 
+                # Generate random colour
+                rgb = (randint(0, 255), randint(0, 255), randint(0, 255))
+
                 # draw boid itself
                 pygame.draw.circle(surf1,               # surface to draw on
-                                   (255, 255, 255),     # colour
+                                   rgb,     # colour
                                    (x, y),              # coordinate
                                    5)                   # size
 
@@ -189,7 +193,7 @@ if __name__ == "__main__":
                 arrow_size = 20
                 new_x = arrow_size * math.cos(math.radians(angle))
                 new_y = arrow_size * math.sin(math.radians(angle))
-                pygame.draw.line(surf1, (255, 255, 255),
+                pygame.draw.line(surf1, rgb,
                                  (x, y),
                                  (x + new_x, y + new_y),
                                  3)
