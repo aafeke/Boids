@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
                 # draw boid itself
                 pygame.draw.circle(surf1,               # surface to draw on
-                                   rgb,     # colour
+                                   rgb,                 # colour
                                    (x, y),              # coordinate
                                    5)                   # size
 
