@@ -36,7 +36,7 @@ class vector:
         return self.magnitude * val
 
     @classmethod
-    def __get_angle(cls, x: int, y: int, mag: int):
+    def get_angle(cls, x: int, y: int, mag: int):
         # print(x, y)
         if mag == 0:
             return 0
@@ -67,7 +67,7 @@ class vector:
             y = self_y + other_y
 
             out_magnitude = (x ** 2 + y ** 2) ** (0.5)
-            out_angle = vector.__get_angle(x, y, out_magnitude)
+            out_angle = vector.get_angle(x, y, out_magnitude)
 
             return vector(out_magnitude, out_angle)
 

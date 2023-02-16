@@ -59,13 +59,14 @@ class boids:
             dy = abs(self.get_coord()[1] - other.get_coord()[1])
 
             distance = pyth(dx, dy)
-            if(distance > collision_dist):
+            if(distance < collision_dist):
                 inverse_dist = ((collision_dist - distance) * 5)/collision_dist
                 # https://www.desmos.com/calculator/nflz1fbzgb
 
                 # move away
+                angle = vector.vector.get_angle(dx, dy, inverse_dist)
                 push = vector.vector(inverse_dist,
-                                     (other.get_angle() + 180) % 360)
+                                    (angle + 180) % 360)
                 self.set_force_v(self.force + push)
 
     def alignment(self):
